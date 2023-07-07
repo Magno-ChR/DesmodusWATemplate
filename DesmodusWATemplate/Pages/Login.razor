@@ -1,0 +1,61 @@
+﻿@page "/login"
+@using Newtonsoft.Json;
+@using System.Text;
+@inject HttpClient Http
+@inject AuthenticationStateProvider Auth
+@inject ILocalStorageService LocalStorage
+
+<PageTitle>Login</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        Sesion iniciada
+        @context.User.Identity.Name
+    </Authorized>
+    <NotAuthorized>
+        <div class="card">
+            <div class="card-body">
+                <EditForm Model="user" OnSubmit="HandleLogin" Context="datos">
+                    <div class="mb-3">
+                        <label for="inputCorreo" class="form-label">Correo: </label>
+                        <InputText @bind-Value="user.Correo" type="email" class="form-control" id="inputCorreo" aria-describedby="helpCorreo" />
+                        <div id="helpCorreo" class="form-text">No compartas tu contraseña con nadie</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="inputClave" class="form-label">Contraseña</label>
+                        <InputText @bind-Value="user.Clave" type="password" class="form-control" id="inputClave" />
+                    </div>
+                    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                </EditForm>
+            </div>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+
+@code {
+    UsuarioLoginDto user = new();
+
+    async Task HandleLogin()
+    {
+        try
+        {
+            // Serializar el objeto en formato JSON
+            string jsonContent = JsonConvert.SerializeObject(user);
+
+            // Crear el contenido de la solicitud
+            HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
+
+            // Realizar la solicitud POST
+            var result = await Http.PostAsync("https://localhost:7235/api/Auth/Login", content);
+
+            Console.WriteLine(result);
+
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex);
+        }
+    }
+
+}
