@@ -4,9 +4,10 @@
 @inject HttpClient Http
 @inject AuthenticationStateProvider Auth
 @inject ILocalStorageService LocalStorage
-@inject IToast mensaje
+@inject IToastService mensaje
 
 <PageTitle>Login</PageTitle>
+
 <AuthorizeView>
     <Authorized>
         Sesion iniciada
@@ -26,32 +27,46 @@
                         <InputText @bind-Value="user.Clave" type="password" class="form-control" id="inputClave" />
                     </div>
                     <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+                    
                 </EditForm>
+                <button class="btn btn-primary" @onclick="ShowModal">Mostrar Modal</button>
             </div>
+            <Modal Visible="showModal" Title="Mi Modal">
+                <p>Contenido del modal</p>
+                <button @onclick="HideModal">Cerrar</button>
+            </Modal>
         </div>
+       
     </NotAuthorized>
 </AuthorizeView>
 
 
-
 @code {
     UsuarioLoginDto user = new();
+    private bool showModal = false;
 
+    private void ShowModal()
+    {
+        showModal = true;
+    }
+
+    private void HideModal()
+    {
+        showModal = false;
+    }
     async Task HandleLogin()
     {
         try
         {
             // Serializar el objeto en formato JSON
             string jsonContent = JsonConvert.SerializeObject(user);
-
             // Crear el contenido de la solicitud
             HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
+            //mensaje.ShowInfo("Hola");
             // Realizar la solicitud POST
             var result = await Http.PostAsync("https://localhost:7235/api/Auth/Login", content);
             var resp = await result.Content.ReadAsStringAsync();
-            if(!result.IsSuccessStatusCode)
-                await mensaje.show();
+            
 
 
             Console.WriteLine(resp);
@@ -59,7 +74,7 @@
         }
         catch(Exception ex)
         {
-            Console.WriteLine(ex);
+            mensaje.ShowError(ex.Message);
         }
     }
 
