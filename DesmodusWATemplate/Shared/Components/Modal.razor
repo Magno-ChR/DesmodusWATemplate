@@ -1,50 +1,58 @@
-﻿<div class="modal" style="display: @(Visible ? "block" : "none")">
-    <div class="modal-dialog">
+﻿@inject IJSRuntime JSRuntime
+<div class="modal fade" id="@id" data-bs-backdrop="@backdrop" data-bs-keyboard="@keyboard" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+    <div class="modal-dialog @_sizeModal">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">@Title</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="HideModal">
-                    <span aria-hidden="true">&times;</span>
+            <div class="modal-header text">
+                <h5 class="modal-title " id="exampleModalLabel">@titulo</h5>
+                <button type="button" class="btn p-0 fs-1" style="width:fit-content;" @onclick="()=>{cerrar=true; onCerrar.InvokeAsync();}" data-bs-dismiss="modal" aria-label="Close">
+                    <i class="bi bi-x "></i>
                 </button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body" style="height:fit-content">
                 @ChildContent
             </div>
+               <div class="modal-footer"><button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button><button type="button" class="btn btn-primary">Guardar</button></div>
         </div>
     </div>
 </div>
-<style>
-    .modal {
-        animation-duration: 0.5s;
-        animation-fill-mode: both;
-    }
-
-    .fadeIn {
-        animation-name: fadeIn;
-    }
-
-    .fadeOut {
-        animation-name: fadeOut;
-    }
-</style>
 @code {
-    [Parameter]
-    public bool Visible { get; set; }
+    [Parameter] public string id { get; set; } = "componenteModal";
+    [Parameter] public string titulo { get; set; } = "Titulo";
+    [Parameter] public SizeModal? sizeModal { get; set; }
+    [Parameter] public RenderFragment ChildContent { get; set; }
+    [Parameter] public EventCallback onCerrar { get; set; }
 
-    [Parameter]
-    public string Title { get; set; }
-
-    [Parameter]
-    public RenderFragment ChildContent { get; set; }
-
-    public void ShowModal()
+    public bool? cerrar { get; set; } = false;
+    private string _sizeModal
     {
-        Visible = true;
+        get
+        {
+            switch (sizeModal)
+            {
+                case SizeModal.small:
+                    return "modal-sm";
+                case SizeModal.large:
+                    return "modal-lg";
+                case SizeModal.extralarge:
+                    return "modal-xl";
+                default:
+                    return "";
+            }
+        }
     }
-
-    public async Task HideModal()
+    //bloquear que se cierre el modal al dar click fuera del modal
+    [Parameter] public bool? bloquearCerrar { get; set; } = false;
+    public string keyboard => bloquearCerrar == false ? "true" : "false";
+    public string backdrop => bloquearCerrar == false ? "true" : "static"; public async Task AbrirModal()
     {
-        Visible = false;
-        await Task.Delay(300); // Espera 300 milisegundos para permitir que se reproduzca la animación de salida
+        //show modal anulacion         //abrir modal
+        var js = $"$('#{id}').modal('show');";
+        await JSRuntime.InvokeVoidAsync("eval", js);
+    }
+    public async Task CerrarModal()
+    {
+        //cerrar modal
+        var js = $"$('#{id}').modal('hide');";
+        await JSRuntime.InvokeVoidAsync("eval", js);
     }
 }

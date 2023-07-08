@@ -26,17 +26,14 @@
                         <label for="inputClave" class="form-label">Contraseña</label>
                         <InputText @bind-Value="user.Clave" type="password" class="form-control" id="inputClave" />
                     </div>
-                    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
-                    
+                    <button type="submit" class="btn btn-primary">Iniciar Sesión</button>     
                 </EditForm>
-                <button class="btn btn-primary" @onclick="ShowModal">Mostrar Modal</button>
+                <button class="btn btn-primary" @onclick="async ()=>{await modal.AbrirModal();}">Abrir Modal</button>
             </div>
-            <Modal Visible="showModal" Title="Mi Modal">
-                <p>Contenido del modal</p>
-                <button @onclick="HideModal">Cerrar</button>
-            </Modal>
         </div>
-       
+       <Modal @ref="modal" titulo="Detalles" sizeModal="SizeModal.large"  id="loginModal" bloquearCerrar="true">
+           Hola
+       </Modal>
     </NotAuthorized>
 </AuthorizeView>
 
@@ -44,16 +41,7 @@
 @code {
     UsuarioLoginDto user = new();
     private bool showModal = false;
-
-    private void ShowModal()
-    {
-        showModal = true;
-    }
-
-    private void HideModal()
-    {
-        showModal = false;
-    }
+    Modal? modal;
     async Task HandleLogin()
     {
         try
