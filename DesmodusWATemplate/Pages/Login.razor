@@ -20,7 +20,7 @@
                     <div class="mb-3">
                         <label for="inputCorreo" class="form-label">Correo: </label>
                         <InputText @bind-Value="user.Correo" type="email" class="form-control" id="inputCorreo" aria-describedby="helpCorreo" />
-                        <div id="helpCorreo" class="form-text">No compartas tu contraseña con nadie</div>
+                        @*<div id="helpCorreo" class="form-text">No compartas tu contraseña con nadie</div>*@
                     </div>
                     <div class="mb-3">
                         <label for="inputClave" class="form-label">Contraseña</label>
@@ -28,12 +28,12 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Iniciar Sesión</button>     
                 </EditForm>
-                <button class="btn btn-primary" @onclick="async ()=>{await modal.AbrirModal();}">Abrir Modal</button>
+                @*<button class="btn btn-primary" @onclick="async ()=>{await modal.AbrirModal();}">Abrir Modal</button>*@
             </div>
         </div>
-       <Modal @ref="modal" titulo="Detalles" sizeModal="SizeModal.large"  id="loginModal" bloquearCerrar="true">
+       @*<Modal @ref="modal" titulo="Detalles" sizeModal="SizeModal.large"  id="loginModal" bloquearCerrar="true">
            Hola
-       </Modal>
+       </Modal>*@
     </NotAuthorized>
 </AuthorizeView>
 
@@ -48,16 +48,22 @@
         {
             // Serializar el objeto en formato JSON
             string jsonContent = JsonConvert.SerializeObject(user);
+
             // Crear el contenido de la solicitud
             HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-            //mensaje.ShowInfo("Hola");
+
             // Realizar la solicitud POST
             var result = await Http.PostAsync("https://localhost:7235/api/Auth/Login", content);
             var resp = await result.Content.ReadAsStringAsync();
-            
 
+            if (!result.IsSuccessStatusCode)
+                mensaje.ShowWarning(resp);
+            else
+            {
+                await LocalStorage.SetItemAsync("token", resp);
+                await Auth.GetAuthenticationStateAsync();
+            }
 
-            Console.WriteLine(resp);
 
         }
         catch(Exception ex)
