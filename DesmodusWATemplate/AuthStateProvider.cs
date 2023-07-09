@@ -2,16 +2,18 @@
 
 using System.Security.Claims;
 using System.Text.Json;
-
+using System.Net.Http.Headers;
 namespace DesmodusWATemplate
 {
     public class AuthStateProvider : AuthenticationStateProvider
     {
         private readonly ILocalStorageService localStorage;
+        private readonly HttpClient http;
 
-        public AuthStateProvider(ILocalStorageService localStorage)
+        public AuthStateProvider(ILocalStorageService localStorage, HttpClient http)
         {
             this.localStorage = localStorage;
+            this.http = http;
         }
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
@@ -19,8 +21,16 @@ namespace DesmodusWATemplate
             string token = await localStorage.GetItemAsStringAsync("token");
 
             var identity = new ClaimsIdentity();
-            if(!string.IsNullOrEmpty(token))
+            http.DefaultRequestHeaders.Authorization = null;
+
+            if (!string.IsNullOrEmpty(token))
+            {
+
                 identity = new ClaimsIdentity(ParseClaimsFromJwt(token), "jwt");
+                http.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token.Replace("\"",""));
+
+            }
 
 
             var user =  new ClaimsPrincipal(identity);

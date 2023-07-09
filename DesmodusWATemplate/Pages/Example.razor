@@ -1,0 +1,58 @@
+﻿@page "/example"
+@inject IResponse Http
+@inject IToastService mensaje
+
+<PageTitle>Componentes de ejemplo</PageTitle>
+<AuthorizeView>
+    <Authorized>
+        <h1>Listado de personas</h1>
+        <div class="card p-5">
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">#</th>
+                            <th scope="col">Nombre Completo</th>
+                            <th scope="col">Nro. Documento</th>
+                            <th scope="col">Correo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        
+                        @foreach (var item in ListPersona)
+                        {
+                        <tr>
+                            <th scope="row">@(ListPersona.IndexOf(item) + 1)</th>
+                            <td>@(item.Nombre + " " + item.PrimerApellido + " " + item.SegundoApellido)</td>
+                            <td>@item.NroDocumento</td>
+                            <td>@item.CorreoPersonal</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        No estas autenticado >:c
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private List<PersonaDto> ListPersona = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await getPersonas();
+    }
+
+    private async Task getPersonas()
+    {
+        var result = await Http.GetRequest<List<PersonaDto>>("https://localhost:7235/api/Personas");
+        if (result.IsSuccess)
+            ListPersona = result.Data!;
+        else
+            mensaje.ShowError(result.Message);
+    }
+
+}
