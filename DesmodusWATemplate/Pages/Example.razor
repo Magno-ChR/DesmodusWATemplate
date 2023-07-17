@@ -48,11 +48,18 @@
 
     private async Task getPersonas()
     {
-        var result = await Http.GetRequest<List<PersonaDto>>("https://localhost:7235/api/Personas");
-        if (result.IsSuccess)
-            ListPersona = result.Data!;
-        else
-            mensaje.ShowError(result.Message);
+        try
+        {
+            var result = await Http.GetRequest<List<PersonaDto>>("https://localhost:7235/api/Personas");
+            if (result.IsSuccess)
+                ListPersona = result.Data!;
+            else
+                mensaje.ShowError(result.Message);
+        }catch(Exception e)
+        {
+            mensaje.ShowError(e.Message);
+        }
+
     }
 
 }

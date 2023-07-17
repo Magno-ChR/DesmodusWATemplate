@@ -1,4 +1,5 @@
 ﻿using DesmodusWATemplate.DTOs;
+using Microsoft.AspNetCore.Components;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
@@ -12,23 +13,33 @@ namespace DesmodusWATemplate.Helpers
     {
         private readonly HttpClient http;
         private readonly IConfiguration configuration;
+        private readonly NavigationManager navigationManager;
         private readonly ILocalStorageService localStorage;
 
-        public Response(ILocalStorageService localStorage, HttpClient http, IConfiguration configuration)
+        public Response(ILocalStorageService localStorage, HttpClient http, IConfiguration configuration, NavigationManager navigationManager)
         {
             this.localStorage = localStorage;
             this.http = http;
             this.configuration = configuration;
+            this.navigationManager = navigationManager;
         }
-        private async Task AddToken()
+        private async Task<bool> AddToken()
         {
             string token = await localStorage.GetItemAsStringAsync("token");
             if (!string.IsNullOrEmpty(token))
             {
-                
+
                 http.DefaultRequestHeaders.Authorization =
                         new AuthenticationHeaderValue("Bearer", token.Replace("\"", ""));
+                return true;
             }
+            else
+            {
+                navigationManager.NavigateTo("Login");
+                return false;
+            }
+                
+            
         }
         private async Task<ResponseDto<T>> toResponse<T>(HttpResponseMessage response)
         {
@@ -59,15 +70,19 @@ namespace DesmodusWATemplate.Helpers
         public async Task<ResponseDto<T>> GetRequest<T>(string apiUrl)
         {
             // Asignar Token
-            await AddToken();
+            if (await AddToken())
+            {
+                // Realizar la solicitud GET
+                HttpResponseMessage response = await http.GetAsync(apiUrl);
 
-            // Realizar la solicitud GET
-            HttpResponseMessage response = await http.GetAsync(apiUrl);
+                // Utilizar el método toResponse para obtener el objeto ResponseDto<T>
+                ResponseDto<T> responseDto = await toResponse<T>(response);
 
-            // Utilizar el método toResponse para obtener el objeto ResponseDto<T>
-            ResponseDto<T> responseDto = await toResponse<T>(response);
-
-            return responseDto;
+                return responseDto;
+            }
+            else
+                return null;
+            
         }
 
     }

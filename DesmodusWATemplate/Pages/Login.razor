@@ -9,10 +9,10 @@
 <PageTitle>Login</PageTitle>
 
 <AuthorizeView>
-    <Authorized>
+@*    <Authorized>
         Sesion iniciada
         @context.User.Identity.Name
-    </Authorized>
+    </Authorized>*@
     <NotAuthorized>
         <div class="card">
             <div class="card-body">
@@ -42,6 +42,7 @@
     UsuarioLoginDto user = new();
     private bool showModal = false;
     Modal? modal;
+    [Inject] public NavigationManager navigationManager { get; set; }
     async Task HandleLogin()
     {
         try
@@ -62,6 +63,7 @@
             {
                 await LocalStorage.SetItemAsync("token", resp);
                 await Auth.GetAuthenticationStateAsync();
+                navigationManager.NavigateTo("/");
             }
 
 

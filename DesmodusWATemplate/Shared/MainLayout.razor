@@ -1,9 +1,17 @@
 ﻿@inherits LayoutComponentBase
 <BlazoredToasts />
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <AuthorizeView>
+        <Authorized>
+            <div class="sidebar">
+                <NavMenu />
+            </div>
+        </Authorized>
+        <NotAuthorized>
+
+        </NotAuthorized>
+    </AuthorizeView>
+    
 
     <main>
         <div class="top-row px-4">
@@ -16,3 +24,13 @@
         </article>
     </main>
 </div>
+@code{
+    [Inject] public NavigationManager navigationManager { get; set; }
+    [Inject] public ILocalStorageService localStorage { get; set; }
+    protected override async Task OnInitializedAsync()
+    {
+        string token = await localStorage.GetItemAsStringAsync("token");
+        if(String.IsNullOrEmpty(token))
+            navigationManager.NavigateTo("Login");
+    }
+}
