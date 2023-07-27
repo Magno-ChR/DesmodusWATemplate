@@ -25,6 +25,7 @@ namespace DesmodusWATemplate.DTOs
     public class UsuarioLoginDto
     {
         [Required]
+        [EmailAddress]
         public string Correo { get; set; }
         [Required]
         public string Clave { get; set; }

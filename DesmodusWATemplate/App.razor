@@ -16,13 +16,13 @@
     
 </CascadingAuthenticationState>
 
-@code {
+@*@code {
     [Inject] public NavigationManager navigationManager { get; set; }
     [Inject] public ILocalStorageService localStorage { get; set; }
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnParametersSetAsync()
     {
         string token = await localStorage.GetItemAsStringAsync("token");
         if (String.IsNullOrEmpty(token))
             navigationManager.NavigateTo("Login");
     }
-}
+}*@

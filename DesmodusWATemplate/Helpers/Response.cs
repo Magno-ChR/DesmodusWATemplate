@@ -4,6 +4,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -25,23 +26,25 @@ namespace DesmodusWATemplate.Helpers
         }
         private async Task<bool> AddToken()
         {
-            string token = await localStorage.GetItemAsStringAsync("token");
-            if (!string.IsNullOrEmpty(token))
-            {
+            string? token = await localStorage.GetItemAsStringAsync("token");
+            if (token == null)
+                token = string.Empty;
+            //if (!string.IsNullOrEmpty(token))
+            //{
 
                 http.DefaultRequestHeaders.Authorization =
-                        new AuthenticationHeaderValue("Bearer", token.Replace("\"", ""));
+                        new AuthenticationHeaderValue("Bearer", token!.Replace("\"", ""));
                 return true;
-            }
-            else
-            {
-                navigationManager.NavigateTo("Login");
-                return false;
-            }
+            //}
+            //else
+            //{
+            //    navigationManager.NavigateTo("Login");
+            //    return false;
+            //}
                 
             
         }
-        private async Task<ResponseDto<T>> toResponse<T>(HttpResponseMessage response)
+        private async Task<Respuesta<T>> toResponse<T>(HttpResponseMessage response)
         {
             int statusCode = (int)response.StatusCode;
 
@@ -51,24 +54,23 @@ namespace DesmodusWATemplate.Helpers
             // Obtener el contenido de respuesta
             string responseBody = await response.Content.ReadAsStringAsync();
 
-            bool IsSuccess = response.IsSuccessStatusCode;
-
             // Deserializar el responseBody a un objeto de tipo T
             T data = JsonConvert.DeserializeObject<T>(responseBody);
 
             // Crear el objeto ResponseDto<T>
-            var responseDto = new ResponseDto<T>
+            var responseDto = new Respuesta<T>
             {
                 StatusCode = statusCode,
-                IsSuccess = IsSuccess,
                 Message = responseContent,
-                Data = data
+                Value = data,
+                
             };
 
             return responseDto;
         }
-        public async Task<ResponseDto<T>> GetRequest<T>(string apiUrl)
+        public async Task<Respuesta<T>> GetRequest<T>(string apiUrl)
         {
+            Respuesta<T> responseDto;
             // Asignar Token
             if (await AddToken())
             {
@@ -76,14 +78,33 @@ namespace DesmodusWATemplate.Helpers
                 HttpResponseMessage response = await http.GetAsync(apiUrl);
 
                 // Utilizar el método toResponse para obtener el objeto ResponseDto<T>
-                ResponseDto<T> responseDto = await toResponse<T>(response);
+                responseDto = await toResponse<T>(response);
 
                 return responseDto;
             }
             else
-                return null;
+                return responseDto =  new Respuesta<T>{ Message = "No autorizado", StatusCode = 401 };
             
         }
+        public async Task<Respuesta<T>> PostRequest<T,Tvalue>(string apiUrl, Tvalue content)
+        {
+            Respuesta<T> responseDto;
+            // Asignar Token
+            if (await AddToken())
+            {
+                var enviarJSON = System.Text.Json.JsonSerializer.Serialize(content);
+                // Realizar la solicitud GET
+                var httpContent = new StringContent(enviarJSON, Encoding.UTF8, "application/json");
+                HttpResponseMessage response = await http.PostAsync(apiUrl, httpContent);
 
+                // Utilizar el método toResponse para obtener el objeto ResponseDto<T>
+                responseDto = await toResponse<T>(response);
+
+                return responseDto;
+            }
+            else
+                return responseDto = new Respuesta<T> { Message = "No autorizado", StatusCode = 401 };
+
+        }
     }
 }

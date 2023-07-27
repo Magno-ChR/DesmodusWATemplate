@@ -4,6 +4,7 @@ namespace DesmodusWATemplate.Helpers
 {
     public interface IResponse
     {
-        Task<ResponseDto<T>> GetRequest<T>(string apiUrl);
+        Task<Respuesta<T>> GetRequest<T>(string apiUrl);
+        Task<Respuesta<T>> PostRequest<T, Tvalue>(string apiUrl, Tvalue content);
     }
 }

@@ -1,22 +1,19 @@
 ﻿@page "/login"
 @using Newtonsoft.Json;
 @using System.Text;
-@inject HttpClient Http
+@inject IResponse Http
 @inject AuthenticationStateProvider Auth
 @inject ILocalStorageService LocalStorage
 @inject IToastService mensaje
 
+@attribute [AllowAnonymous]
 <PageTitle>Login</PageTitle>
 
-<AuthorizeView>
-@*    <Authorized>
-        Sesion iniciada
-        @context.User.Identity.Name
-    </Authorized>*@
-    <NotAuthorized>
+
         <div class="card">
             <div class="card-body">
-                <EditForm Model="user" OnSubmit="HandleLogin" Context="datos">
+                <EditForm Model="user" OnValidSubmit="HandleLogin" Context="datos">
+                    <DataAnnotationsValidator />
                     <div class="mb-3">
                         <label for="inputCorreo" class="form-label">Correo: </label>
                         <InputText @bind-Value="user.Correo" type="email" class="form-control" id="inputCorreo" aria-describedby="helpCorreo" />
@@ -34,8 +31,6 @@
        @*<Modal @ref="modal" titulo="Detalles" sizeModal="SizeModal.large"  id="loginModal" bloquearCerrar="true">
            Hola
        </Modal>*@
-    </NotAuthorized>
-</AuthorizeView>
 
 
 @code {
@@ -47,21 +42,13 @@
     {
         try
         {
-            // Serializar el objeto en formato JSON
-            string jsonContent = JsonConvert.SerializeObject(user);
 
-            // Crear el contenido de la solicitud
-            HttpContent content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
-
-            // Realizar la solicitud POST
-            var result = await Http.PostAsync("https://localhost:7235/api/Auth/Login", content);
-            var resp = await result.Content.ReadAsStringAsync();
-
-            if (!result.IsSuccessStatusCode)
-                mensaje.ShowWarning(resp);
+            var result = await Http.PostRequest<Respuesta<string>,UsuarioLoginDto>("https://localhost:7235/api/Auth/Login", user);
+            if (!result.IsSuccess)
+                mensaje.ShowWarning(result.Value.Message);
             else
             {
-                await LocalStorage.SetItemAsync("token", resp);
+                await LocalStorage.SetItemAsync("token", result.Value.Value);
                 await Auth.GetAuthenticationStateAsync();
                 navigationManager.NavigateTo("/");
             }

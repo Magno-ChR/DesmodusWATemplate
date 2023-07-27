@@ -6,23 +6,33 @@
             <div class="sidebar">
                 <NavMenu />
             </div>
+            <main>
+                <div class="top-row px-4">
+                    @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
+                    <LoginLogoutButton />
+                </div>
+
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
         </Authorized>
         <NotAuthorized>
+            <main>
+                <div class="top-row px-4">
+                    @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
+                    <LoginLogoutButton />
+                </div>
 
+                <article class="content px-4">
+                    @Body
+                </article>
+            </main>
         </NotAuthorized>
     </AuthorizeView>
     
 
-    <main>
-        <div class="top-row px-4">
-            @*<a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a>*@
-            <LoginLogoutButton />
-        </div>
-
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
+    
 </div>
 @code{
     [Inject] public NavigationManager navigationManager { get; set; }
