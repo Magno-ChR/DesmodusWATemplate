@@ -49,24 +49,19 @@ namespace DesmodusWATemplate.Helpers
             int statusCode = (int)response.StatusCode;
 
             // Leer el mensaje de respuesta
-            string responseContent = response.ReasonPhrase.ToString();
+            string responseMessage = response.ReasonPhrase.ToString();
 
             // Obtener el contenido de respuesta
             string responseBody = await response.Content.ReadAsStringAsync();
 
-            // Deserializar el responseBody a un objeto de tipo T
-            T data = JsonConvert.DeserializeObject<T>(responseBody);
-
-            // Crear el objeto ResponseDto<T>
-            var responseDto = new Respuesta<T>
+            if (String.IsNullOrEmpty(responseBody))
             {
-                StatusCode = statusCode,
-                Message = responseContent,
-                Value = data,
-                
-            };
+                return new Respuesta<T>{ StatusCode =  statusCode, Message = responseMessage };
+            }
+            // Deserializar el responseBody a un objeto de tipo T
+            Respuesta<T> RespuestaDto = JsonConvert.DeserializeObject<Respuesta<T>>(responseBody);
 
-            return responseDto;
+            return RespuestaDto;
         }
         public async Task<Respuesta<T>> GetRequest<T>(string apiUrl)
         {

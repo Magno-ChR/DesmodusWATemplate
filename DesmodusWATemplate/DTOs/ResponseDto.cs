@@ -7,7 +7,7 @@ namespace DesmodusWATemplate.DTOs
     {
         public int StatusCode { get; set; } = 200;
         public string Message { get; set; } = "Ok";
-        public T? Value { get; set; }
+        public T? Data { get; set; }
         public bool IsSuccess
         {
             get
@@ -17,11 +17,21 @@ namespace DesmodusWATemplate.DTOs
 
             }
         }
+        //public static Respuesta<T> Translate(int statuscode)
+        //{
+        //    switch (statuscode)
+        //    {
+        //        case 401:
+        //            return (Respuesta<T>)Responses.Error401().Value;
+        //        default:
+        //            return (Respuesta<T>)Responses.Error500().Value;
+
+        //    }
+        //}
     }
 
     public class Responses
     {
-
 
         public static ObjectResult Get<T>(T value, int statusCode = 200, string message = "Ok")
         {
@@ -38,7 +48,7 @@ namespace DesmodusWATemplate.DTOs
             }
             else
             {
-                resp = new Respuesta<T> { Message = message, StatusCode = statusCode, Value = value };
+                resp = new Respuesta<T> { Message = message, StatusCode = statusCode, Data = value };
                 return new ObjectResult(resp)
                 {
                     Value = resp,
@@ -65,7 +75,16 @@ namespace DesmodusWATemplate.DTOs
                 StatusCode = resp.StatusCode
             };
         }
-        public static ObjectResult Error404(string message = "No encontrado")
+            public static ObjectResult Error401(string message = "No autorizado")
+            {
+                var resp = new Respuesta<string> { Message = message, StatusCode = 401 };
+                return new ObjectResult(resp)
+                {
+                    Value = resp,
+                    StatusCode = resp.StatusCode
+                };
+            }
+            public static ObjectResult Error404(string message = "No encontrado")
         {
             var resp = new Respuesta<string> { Message = message, StatusCode = 404 };
             return new ObjectResult(resp)
@@ -83,5 +102,6 @@ namespace DesmodusWATemplate.DTOs
                 StatusCode = resp.StatusCode
             };
         }
+ 
     }
 }

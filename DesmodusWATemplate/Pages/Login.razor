@@ -43,12 +43,12 @@
         try
         {
 
-            var result = await Http.PostRequest<Respuesta<string>,UsuarioLoginDto>("https://localhost:7235/api/Auth/Login", user);
+            var result = await Http.PostRequest<string,UsuarioLoginDto>("https://localhost:7235/api/Auth/Login", user);
             if (!result.IsSuccess)
-                mensaje.ShowWarning(result.Value.Message);
+                mensaje.ShowWarning(result.Message);
             else
             {
-                await LocalStorage.SetItemAsync("token", result.Value.Value);
+                await LocalStorage.SetItemAsync("token", result.Data);
                 await Auth.GetAuthenticationStateAsync();
                 navigationManager.NavigateTo("/");
             }
